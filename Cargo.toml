@@ -1,0 +1,21 @@
+[package]
+name = "rust-coinbase"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.63.0"
+description = "A Rust library for constructing and manipulating Bitcoin coinbase transactions"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/example/rust-coinbase"
+keywords = ["bitcoin", "mining", "coinbase", "transaction", "stratum"]
+categories = ["cryptography::cryptocurrencies"]
+
+[features]
+default = ["std"]
+std = ["bitcoin/std", "bitcoin/rand-std"]
+serde = ["bitcoin/serde"]
+
+[dependencies]
+bitcoin = { version = "0.32", default-features = false }
+
+[dev-dependencies]
+hex = "0.4"
