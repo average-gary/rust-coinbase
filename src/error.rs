@@ -54,6 +54,12 @@ pub enum CoinbaseError {
     },
     /// BIP34 height could not be decoded from the scriptSig.
     InvalidBip34Height,
+    /// A [`ScriptDerivator`] failed to produce a script.
+    ///
+    /// Contains the debug representation of the underlying derivator error.
+    ///
+    /// [`ScriptDerivator`]: crate::derivator::ScriptDerivator
+    ScriptDerivation(alloc::string::String),
     /// Multiple validation errors occurred.
     Multiple(Vec<CoinbaseError>),
 }
@@ -116,6 +122,9 @@ impl fmt::Display for CoinbaseError {
             }
             CoinbaseError::InvalidBip34Height => {
                 write!(f, "invalid BIP34 height encoding in coinbase scriptSig")
+            }
+            CoinbaseError::ScriptDerivation(msg) => {
+                write!(f, "script derivation failed: {}", msg)
             }
             CoinbaseError::Multiple(errors) => {
                 write!(f, "multiple coinbase errors: [")?;

@@ -50,6 +50,7 @@ use bitcoin::{
     WitnessMerkleNode,
 };
 
+use crate::derivator::ScriptDerivator;
 use crate::error::CoinbaseError;
 use crate::script;
 use crate::witness as wit;
@@ -144,6 +145,74 @@ impl CoinbaseBuilder {
     pub fn output_raw(mut self, output: TxOut) -> Self {
         self.outputs.push(output);
         self
+    }
+
+    /// Add a payout output using a [`ScriptDerivator`].
+    ///
+    /// Calls [`ScriptDerivator::script_pubkey`] to get the current payout
+    /// script and adds it as an output with the given value.
+    ///
+    /// This does **not** advance the derivator -- call
+    /// [`output_from_derivator_next`] to advance and add in one step.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`CoinbaseError::ScriptDerivation`] if the derivator fails.
+    ///
+    /// [`output_from_derivator_next`]: CoinbaseBuilder::output_from_derivator_next
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use rust_coinbase::{CoinbaseBuilder, derivator::StaticScript};
+    /// use bitcoin::{Amount, ScriptBuf};
+    ///
+    /// let payout = StaticScript::new(ScriptBuf::new_op_return(&[]));
+    ///
+    /// let tx = CoinbaseBuilder::new(840_000)
+    ///     .output_from_derivator(&payout, Amount::from_sat(312_500_000))
+    ///     .unwrap()
+    ///     .build()
+    ///     .unwrap();
+    /// ```
+    pub fn output_from_derivator<D: ScriptDerivator>(
+        mut self,
+        derivator: &D,
+        value: Amount,
+    ) -> Result<Self, CoinbaseError> {
+        let script_pubkey = derivator
+            .script_pubkey()
+            .map_err(|e| CoinbaseError::ScriptDerivation(alloc::format!("{:?}", e)))?;
+        self.outputs.push(TxOut {
+            value,
+            script_pubkey,
+        });
+        Ok(self)
+    }
+
+    /// Add a payout output by advancing a [`ScriptDerivator`] to the next script.
+    ///
+    /// Calls [`ScriptDerivator::next_script_pubkey`] to advance and get the
+    /// next payout script, then adds it as an output with the given value.
+    ///
+    /// Use this for address rotation -- each call produces a fresh address.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`CoinbaseError::ScriptDerivation`] if the derivator fails.
+    pub fn output_from_derivator_next<D: ScriptDerivator>(
+        mut self,
+        derivator: &mut D,
+        value: Amount,
+    ) -> Result<Self, CoinbaseError> {
+        let script_pubkey = derivator
+            .next_script_pubkey()
+            .map_err(|e| CoinbaseError::ScriptDerivation(alloc::format!("{:?}", e)))?;
+        self.outputs.push(TxOut {
+            value,
+            script_pubkey,
+        });
+        Ok(self)
     }
 
     /// Set the extranonce space reservation size (in bytes).

@@ -48,17 +48,22 @@
 //! ## Modules
 //!
 //! - [`builder`] - Fluent [`CoinbaseBuilder`] API for constructing coinbase transactions
+//! - [`derivator`] - [`ScriptDerivator`] trait and [`StaticScript`] for payout script generation
 //! - [`split`] - Stratum coinbase split model ([`CoinbaseSplit`])
 //! - [`script`] - Coinbase scriptSig construction and BIP34 height encoding
 //! - [`witness`] - SegWit witness commitment calculation (BIP141)
 //! - [`subsidy`] - Block reward halving schedule
 //! - [`validation`] - Coinbase transaction validation and parsing
 //! - [`error`] - Error types
+//!
+//! [`ScriptDerivator`]: derivator::ScriptDerivator
+//! [`StaticScript`]: derivator::StaticScript
 
 #![cfg_attr(not(feature = "std"), no_std)]
 extern crate alloc;
 
 pub mod builder;
+pub mod derivator;
 pub mod error;
 pub mod script;
 pub mod split;
@@ -68,6 +73,7 @@ pub mod witness;
 
 // Re-export primary types for convenience.
 pub use builder::CoinbaseBuilder;
+pub use derivator::{ScriptDerivator, StaticScript};
 pub use error::CoinbaseError;
 pub use split::CoinbaseSplit;
 
