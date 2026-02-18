@@ -49,6 +49,7 @@
 //!
 //! - [`builder`] - Fluent [`CoinbaseBuilder`] API for constructing coinbase transactions
 //! - [`derivator`] - [`ScriptDerivator`] trait and [`StaticScript`] for payout script generation
+//! - [`descriptor`] - Descriptor-based address derivation (requires `descriptors` feature)
 //! - [`split`] - Stratum coinbase split model ([`CoinbaseSplit`])
 //! - [`script`] - Coinbase scriptSig construction and BIP34 height encoding
 //! - [`witness`] - SegWit witness commitment calculation (BIP141)
@@ -64,6 +65,8 @@ extern crate alloc;
 
 pub mod builder;
 pub mod derivator;
+#[cfg(feature = "descriptors")]
+pub mod descriptor;
 pub mod error;
 pub mod script;
 pub mod split;
@@ -74,6 +77,8 @@ pub mod witness;
 // Re-export primary types for convenience.
 pub use builder::CoinbaseBuilder;
 pub use derivator::{ScriptDerivator, StaticScript};
+#[cfg(feature = "descriptors")]
+pub use descriptor::{descriptor_uses_testnet_keys, DescriptorDerivator};
 pub use error::CoinbaseError;
 pub use split::CoinbaseSplit;
 

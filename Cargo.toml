@@ -13,9 +13,11 @@ categories = ["cryptography::cryptocurrencies"]
 default = ["std"]
 std = ["bitcoin/std", "bitcoin/rand-std"]
 serde = ["bitcoin/serde"]
+descriptors = ["dep:miniscript"]
 
 [dependencies]
 bitcoin = { version = "0.32", default-features = false }
+miniscript = { version = "13.0", default-features = false, optional = true }
 
 [dev-dependencies]
 hex = "0.4"

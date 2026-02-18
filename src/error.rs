@@ -60,6 +60,15 @@ pub enum CoinbaseError {
     ///
     /// [`ScriptDerivator`]: crate::derivator::ScriptDerivator
     ScriptDerivation(alloc::string::String),
+    /// Failed to parse a descriptor string (requires `descriptors` feature).
+    #[cfg(feature = "descriptors")]
+    DescriptorParse(alloc::string::String),
+    /// Descriptor does not contain a wildcard (`*`) in the derivation path.
+    #[cfg(feature = "descriptors")]
+    DescriptorNoWildcard,
+    /// Failed to derive a script at the given index from a descriptor.
+    #[cfg(feature = "descriptors")]
+    DescriptorDerivation(alloc::string::String),
     /// Multiple validation errors occurred.
     Multiple(Vec<CoinbaseError>),
 }
@@ -125,6 +134,21 @@ impl fmt::Display for CoinbaseError {
             }
             CoinbaseError::ScriptDerivation(msg) => {
                 write!(f, "script derivation failed: {}", msg)
+            }
+            #[cfg(feature = "descriptors")]
+            CoinbaseError::DescriptorParse(msg) => {
+                write!(f, "failed to parse descriptor: {}", msg)
+            }
+            #[cfg(feature = "descriptors")]
+            CoinbaseError::DescriptorNoWildcard => {
+                write!(
+                    f,
+                    "descriptor does not have a wildcard (e.g., /0/*) in the derivation path"
+                )
+            }
+            #[cfg(feature = "descriptors")]
+            CoinbaseError::DescriptorDerivation(msg) => {
+                write!(f, "descriptor derivation failed: {}", msg)
             }
             CoinbaseError::Multiple(errors) => {
                 write!(f, "multiple coinbase errors: [")?;

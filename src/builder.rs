@@ -215,6 +215,63 @@ impl CoinbaseBuilder {
         Ok(self)
     }
 
+    /// Add a payout output by deriving a script from a descriptor string.
+    ///
+    /// This is a one-shot convenience method that parses the descriptor, derives
+    /// the script at the given index, and adds it as an output. For repeated
+    /// derivation with address rotation, use [`DescriptorDerivator`] with
+    /// [`output_from_derivator`] or [`output_from_derivator_next`] instead.
+    ///
+    /// # Arguments
+    ///
+    /// * `descriptor` - A wildcard descriptor string (e.g., `wpkh(xpub.../0/*)`)
+    /// * `index` - The derivation index to use
+    /// * `value` - The output amount
+    ///
+    /// # Errors
+    ///
+    /// Returns [`CoinbaseError::DescriptorParse`] if the descriptor is invalid.
+    /// Returns [`CoinbaseError::DescriptorNoWildcard`] if no wildcard is present.
+    /// Returns [`CoinbaseError::DescriptorDerivation`] if derivation fails.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # #[cfg(feature = "descriptors")]
+    /// # {
+    /// use rust_coinbase::CoinbaseBuilder;
+    /// use bitcoin::Amount;
+    ///
+    /// let desc = "wpkh(tpubD6NzVbkrYhZ4XgiXtGrdW5XDAPFCL9h7we1vwNCpn8tGbBcgfVYjXyhWo4E1xkh56hjod1RhGjxbaTLV3X4FyWuejifB9jusQ46QzG87VKp/0/*)";
+    /// let tx = CoinbaseBuilder::new(840_000)
+    ///     .output_from_descriptor(desc, 0, Amount::from_sat(312_500_000))
+    ///     .unwrap()
+    ///     .build()
+    ///     .unwrap();
+    ///
+    /// assert!(tx.is_coinbase());
+    /// # }
+    /// ```
+    ///
+    /// [`DescriptorDerivator`]: crate::descriptor::DescriptorDerivator
+    /// [`output_from_derivator`]: CoinbaseBuilder::output_from_derivator
+    /// [`output_from_derivator_next`]: CoinbaseBuilder::output_from_derivator_next
+    #[cfg(feature = "descriptors")]
+    pub fn output_from_descriptor(
+        mut self,
+        descriptor: &str,
+        index: u32,
+        value: Amount,
+    ) -> Result<Self, CoinbaseError> {
+        let derivator = crate::descriptor::DescriptorDerivator::new(descriptor, index)?;
+        let script_pubkey = derivator.derive_at_index(index)?;
+        self.outputs.push(TxOut {
+            value,
+            script_pubkey,
+        });
+        Ok(self)
+    }
+
     /// Set the extranonce space reservation size (in bytes).
     ///
     /// This reserves space in the coinbase scriptSig for the extranonce.
